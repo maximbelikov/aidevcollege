@@ -161,6 +161,31 @@ This should be the result:
 ]
 ```
 
+### Optional: Postman
+
+[Postman](https://www.postman.com/) is an API platform for building and using APIs. Postman simplifies each step of the API lifecycle and streamlines collaboration. Since the Azure Cloud Platform consists out of many APIs this tool is perfect to get a deeper understanding of its functionalities. 
+
+[Here](./postman/) you will find 2 Postman collections we have created for you for the Translator API and Text Analytics API. 
+
+[Download Postman](https://app.getpostman.com/app/download/win64) and _Import_ the Translation file. After the import is done it should look like this. 
+![Postman after import](./images/02_postman_import.png)
+
+Now go to _Environments_ and create an environment for the Translator API.
+
+- Create a  variable called "api_key", select "secret" as a type, and paste your API key from the portal.
+
+![Postman environments](./images/02_postman_create_environments.png)
+
+Finally, assign the environment created to the Translator collection. 
+
+![Postman environment assign](./images/02_environmen_select_translator.png).
+
+Now, you can play around with the APIs! You can select the different services from the collections tab and click on "Send" to send a request. At the bottom, you should receive a response. You can also change the Parameters to check out different languages, or you can change the body to try out other texts. 
+
+![Postman response](./images/02_postman_result.png)
+
+
+
 ## Language Service
 
 | Azure Cognitive Services                                                                                              | Information                                                                         |
@@ -199,7 +224,7 @@ In a next step, we need to create a client object ([TextAnalyticsClient](https:/
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.textanalytics import TextAnalyticsClient
 
-subscription_key = "YOUR_SUBSCRIPTION_KEY"
+key = "YOUR_SUBSCRIPTION_KEY"
 region = "YOUR_SUBSCRIPTION_REGION"
 
 credential = AzureKeyCredential(key)
@@ -469,6 +494,27 @@ Since we looked at _Entity Linking_ in the last paragraph, let's check out the S
 
 Feel free to try out the Language Studio for some of the other features.
 
+
+### Optional: Postman
+
+We can repeat the previous steps to do the same for the Text Analytics API in Postman.
+
+[Here](./postman/) you will find the Postman collections we have created for you for the Translation and Text Analytics API. 
+
+- Download the Text Analytics file and  _Import_ it to your Postman. After the import is done it should look like this. 
+- Create an  _Environment_ for the Text Analytics API.
+- Add only the api_key variable. Set it as "secret" and paste the key for that service as found in the portal.
+
+![Postman environments](./images/02_postman_create_environments.png)
+
+- Finally, assign the environment created to the respective collection. 
+
+![Postman environment assign](./images/02_environment_select.png).
+
+Try the different APIs!
+
+![Postman response](./images/02_postman_result.png)
+
 So far, we have covered the Language pillar of the Cognitive Services such as Translation. In a next step, we will look at the pillar _Speech_.
 
 # Speech
@@ -506,7 +552,7 @@ To use any SDK, you need to first install it. In this case we will install the P
 pip install azure-cognitiveservices-speech
 ```
 
-If you are using a Mac, you might need to run this first:
+If you are using a **Mac**, you might need to run this first:
 
 ```python
 python3 -m pip install --upgrade pip
@@ -518,8 +564,9 @@ Once the SDK is installed, please restart the kernel. After that we can write ou
 import azure.cognitiveservices.speech as speechsdk # import the speech sdk
 import IPython.display as ipd # import IPython.display to display the audio output
 
+speech_config = speechsdk.SpeechConfig(subscription="YOUR_SUBSCRIPTION_KEY", region="YOUR_RESOURCE_LOCATION")
+
 def to_file():
-  speech_config = speechsdk.SpeechConfig(subscription="YOUR_SUBSCRIPTION_KEY", region="YOUR_RESOURCE_LOCATION")
   speech_config.speech_synthesis_language = "en-US"
   speech_config.speech_synthesis_voice_name ="en-GB-SoniaNeural"
   audio_config = speechsdk.audio.AudioOutputConfig(filename="welcome.wav")
@@ -541,7 +588,6 @@ Paste the following code in the notebook you used before.
 
 ```python
 def from_file():
-  speech_config = speechsdk.SpeechConfig(subscription="YOUR_SUBSCRIPTION_KEY", region="YOUR_RESOURCE_LOCATION")
   speech_config.speech_synthesis_language = "en-US"
   speech_config.speech_synthesis_voice_name ="en-GB-SoniaNeural"
   audio_input = speechsdk.AudioConfig(filename="welcome.wav")
@@ -855,6 +901,7 @@ for polygon in polygons:
     ax.axes.add_patch(patch)
     plt.text(vertices[0][0], vertices[0][1], text, fontsize=20, va="top")
 _ = plt.axis("off")
+plt.show()
 ```
 
 **Visualization:**
@@ -926,6 +973,7 @@ for word in word_infos:
     ax.axes.add_patch(patch)
     plt.text(origin[0], origin[1], text, fontsize=11, va="top")
 _ = plt.axis("off")
+plt.show()
 ```
 
 **Example Result:**
@@ -947,52 +995,41 @@ From recognizing text on images we will now detect objects on images for this we
 :triangular_flag_on_post: **Goal:** Detect beer glasses in images
 
 **What it does?**
-The Custom Vision service uses a machine learning algorithm to analyze images. You, the developer, submit groups of images that feature and lack the characteristics in question. You label the images yourself at the time of submission. Then, the algorithm trains to this data and calculates its own accuracy by testing itself on those same images. Once the algorithm is trained, you can test, retrain, and eventually use it in your image recognition app to classify new images. You can also export the model itself for offline use.
+The Custom Vision service uses a machine learning algorithm to analyze images. You, the developer, submits groups of images that feature and lack the characteristics in question. You label the images yourself at the time of submission. Then, the algorithm trains with this data and calculates its own accuracy by testing itself on those same images. Once the algorithm is trained, you can test, retrain, and eventually use it in your image recognition app to classify new images. You can also export the model itself for offline use.
 
-In this chapter, we will use [Custom Vision](https://customvision.ai) to detect beer glasses in images - [Image Dataset for training and testing](https://bootcamps.blob.core.windows.net/ml-test-images/beer_glasses.zip)
+In this chapter, we will use [Custom Vision](https://customvision.ai) to build a flower image classifier.
 
 First we deploy the **Azure Custom Vision** Service in the **Azure Portal**:
 
 ![Azure Portal](./images/CustomVision1.png)
 
-The Custom Vision Service has 2 types of endpoints. One for training the model and one for running predictions against the model. For this example, we will use both. Therfore, select _both_. Fill in the _name_ and the _region_ as well as the _pricing tier_ for the training and the prediction resource. Then hit _create_.
+The Custom Vision Service has 2 types of endpoints. One for training the model and one for running predictions against the model. For this example, we will use both. Therfore, select _both_. Fill in the _name_ and the _region_ as well as the _pricing tier (F0)_ for the training and the prediction resource. Then hit _create_.
 
 ![Azure Portal](./images/CustomVision2.png)
 
 Then, log in to [Custom Vision](https://www.customvision.ai/) with your Azure credentials.
 
-Create a new project of type `Object detection`:
+Create a new project of type `Classification`, classification type `Multiclass` and Domain `General`:
 
 ![alt text](./images/CustomVision4.png "Custom Vision Project")
 
-Next, add all the **training images** from the **unzipped** [dataset](https://bootcamps.blob.core.windows.net/ml-test-images/beer_glasses.zip) within the **beer_glasses_train**.
+Next, create tags for the different flower types our image classifier will be able to detect - daisy, rose, tulip, water lily and negative (none of the 4 flower types). Then upload minimum 15 **training images** per tag and tag them accordingly. Feel free to develop an image classifier with different images than flowers if this is what you prefer.
 
 ![alt text](./images/CustomVision6.png "Tagging the training images")
 
-Once added, we need to tag all the beer glasses in the images. If there are multiple glasses in one image, tag each one individually:
+Once we've tagged all images, we can hit the `Train` button. For this challenge choose _Quick Training_. After 1-2 minutes, we'll see the training statistics:
 
-![alt text](./images/customvision_tagging.png "Tagging the training images")
-
-Once we've tagged all 15 images (that's the minimum), we can hit the `Train` button. After 1-2 minutes, we'll see the training statistics:
-
-![alt text](./images/customvision_performance.png "Object Detection performance")
+![alt text](./images/customvision_performance.png "Image classification performance")
 
 Let's briefly look at the results and make sure we understand them:
 
-Sliders - they set the results given certain thresholds
+- **Precision** indicates the fraction of identified classifications that were correct. For example, if the classifier detects 10 images as tulips and only 5 images are actual tulips, the precision would be 50%.
+- **Recall** indicates the fraction of actual classifications that were correctly identified. For example, if the classifier detects 10 images as roses and 10 are actual roses, the recall would be 50%.
+- ** - Average Precision** summarises the precision and recall at different thresholds.
 
-- Probability Threshold: 82% - this means we only count detections with over 82% probability as beer glasses
-- Overlap Threshold: 51% - this means we want our detection results overlap at least 51% with the ground truth in the training set
+Under `Quick Test`, we can briefly test images and see what the service will detect. Look for the different flower types online and paste the image URLs in the Quick Test section. We only added a few training images (50 per tag are recommended) with a lot of variance, the results are not great yet. By adding more images, we could most likely improve the performance significantly.
 
-Results:
-
-- Precision: 30% - given a detection, it is 30% correct on average (meaning the algorithm will also detect other objects as glasses)
-- Recall: 100% - a recall of 100% means, it will detect all beer glasses (but maybe mistake some other objects as beer glasses too)
-- mAP: 83.3% - mean average precision - the average how well our detection algorithm works
-
-Under `Quick Test`, we can briefly upload our testing images and see what the service will detect. As we only added 15 training images with a lot of variance, the results are not great yet. By adding more images, we could most likely improve the detection performance significantly.
-
-If we go to the `Performance` tab, we can get the `Prediction URL` and the `Prediction-Key`. We can use this endpoint to programmatically access the service.
+If we go to the `Performance` tab, we can get the `Prediction URL` and the `Prediction-Key`. We can use this endpoint to programmatically access the service. We will do this in a later challenge.
 
 ## What we have done so far:
 
@@ -1000,13 +1037,13 @@ If we go to the `Performance` tab, we can get the `Prediction URL` and the `Pred
 - We called those Cognitive Service REST APIs by using Python
 - We trained custom machine learning models (e.g. Custom Vision) using an UI
 
-As we have seen the Cognitive Services one by one, we want to still continue to combine the ml expert view with the developer view. Thus, we will take the Custom Vision Service which we have already tried out and will integrate it into a small application. Let's move onto the next challenge.
+In a next step, we want to see how the cognitive services can be embedded into an application.
 
-:zap: Let's go to **[AI Developer College Day2 - Custom Vision Application](../../CustomVisionApp/CustomVisionApp.md)**!
+:zap: Let's go to **[AI Developer College Day 2 - Cognitive Services Kitchen Sink App](https://github.com/azuredevcollege/cognitive-services-kitchen-sink)**!
 
 ## House Keeping: Lab Cleanup
 
-Remove the sample resource group.
+Remove the sample resource group at the end of the day.
 
 ```shell
 $ az group delete -n <yourResourceGroupName>
